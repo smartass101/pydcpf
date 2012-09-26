@@ -22,15 +22,16 @@ class Device(object):
             If not specified, the module is guessed from the *address* parameter
         send_byte_count : int or None, optional
             Size of byte chunks to send at once
-            If None, the bytes will not be split into chunks
+            If 0, the bytes will not be split into chunks
         receive_byte_count : int or None, optional
             Size of byte chunks to receive at once
-            If None, the bytes will not be split into chunks
+            If 0, the bytes will not be split into chunks
         connect : bool, optional
             If True, connect immediately after initialization
         serve : bool, optional
             If True, this device is expected to wait for a connection which may modify the way the device connects
         """
+        self.data_buffer = bytearray()
         self.serve = serve
         self.address = address
         self.send_byte_count = send_byte_count
@@ -38,6 +39,8 @@ class Device(object):
         if not isinstance(protocol_module, ModuleType):
             protocol_module = __import__(protocol_module, fromlist=[''])
         self.protocol = protocol_module
+        self._response_buffer_packet = protocol_module.ResponsePacket()
+        self._request_buffer_packet = protocol_module.RequestPacket()
         if interface_module: #was explicitely specified
             if not isinstance(interface_module, ModuleType):
                 interface_module = __import__(interface_module, fromlist=[''])
@@ -51,6 +54,7 @@ class Device(object):
             self.connect()
         
     def connect(address=None, serve=None):
+        """Connect the device, optionally override the Device.address ad Device.serve attributes (same form and meaning as in :meth:`Device.__init__`)"""
         if address is None:
             address = self.address
         if serve is None:
@@ -60,16 +64,80 @@ class Device(object):
     def serve(self): #useful?
         pass
 
-    def send_request_packet(self, packet):
-        pass
 
-    def receive_response(self, **kwargs):
-        """get a packet and return only data, but check the packet first"""
-        pass
+    def send_request_packet(self, packet, send_byte_count=None):
+        """Send a request packet, optionally send *send_byte_count* size byte chunks at once
 
-    def receive_response_packet(self, packet):
-        pass
+        Parameters
+        ----------
+        packet : RequestPacket
+            packet to send
+        send_byte_count : int, optional
+            if specified, this will override the Device.send_byte_count attribute specified during initialization
+        """
+        if send_byte_count is None:
+            send_byte_count = self.send_byte_count
+        raw_packet = packet.raw_packet
+        if send_byte_count == 0: #do not split the packet TODO possibly to loose checking, what about None or negative values?
+            self.interface.send_data(raw_packet)
+        else: #may split
+            for delimiter in xrange(0, len(raw_packet), send_byte_count):
+                self.interface.send_data(raw_packet[delimiter:delimiter + send_byte_count])
+                
+    def send_request(self, send_byte_count=None, **packet_parameters):
+        """Send a request, optionally send *send_byte_count* size byte chunks at once
 
-    def query(self): #useful ? just calling two functions
+        Parameters
+        ----------
+        send_byte_count : int, optional
+            if specified, this will override the Device.send_byte_count attribute specified during initialization
+        **packet_parameters
+            keyword arguments containing parameters for packet creation
+        """
+        self.send_request_packet(self._request_buffer_packet.__init__(**packet_parameters), send_byte_count)
+            
+
+    def receive_response(self, receive_byte_count=None, **check_parameters):
+        """Receive a response and return only data, but check the packet first
+
+        """
+        packet = self.receive_response_packet(receive_byte_count, self._response_buffer_packet)
+        return packet.data()
+
+    def receive_response_packet(self, receive_byte_count=None, packet=None):
+        """Receive a response and return the received packet, optionally read *receive_byte_count* sized byte chunks at once into the specified *packet*
+
+        Parameters
+        ----------
+        receive_byte_count : int, optional
+            if specified, this will override the Device.receive_byte_count attribute specified during initialization
+        packet : ResponsePacket, optional
+            If specified, the data will be read into this packet and then it will be returned
+
+        Returns
+        -------
+        packet : ResponsePacket
+            Packet created from the protocol module (specified during initialization) or the one passed to this method
+        """
+        if packet is not None:
+            packet = self.protocol.ResponsePacket()
+        if receive_byte_count is None:
+            receive_byte_count = self.receive_byte_count
+        while True:
+            remnant = packet.extract(self.data_buffer)
+            if isinstance(remnant, bytearray):
+                break
+            self.data_buffer.extend(self.interface.receive_data(receive_byte_count))
+        self.data_buffer = remnant
+        return packet
+    
+    def query(self): #useful ? just calling two methods
         pass
     
+
+class Server(object):
+    """Serves Devices
+
+    Has the ability to find out protocol they want to use for communication
+    """
+    pass

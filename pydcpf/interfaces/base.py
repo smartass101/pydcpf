@@ -39,6 +39,10 @@ class Interface(object):
         ----------
         data : str or bytearray or bytes
             data to be sent
+
+        Note
+        ----
+        This method is expected to send *ALL* data, so it may have to check whether all data was sent
         """
         pass
 
