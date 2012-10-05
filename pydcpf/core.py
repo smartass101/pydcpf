@@ -39,7 +39,6 @@ class Device(object):
         if not isinstance(protocol_module, ModuleType):
             protocol_module = __import__(protocol_module, fromlist=[''])
         self.protocol = protocol_module
-        self._response_buffer_packet = protocol_module.ResponsePacket()
         self._request_buffer_packet = protocol_module.RequestPacket()
         if interface_module: #was explicitely specified
             if not isinstance(interface_module, ModuleType):
