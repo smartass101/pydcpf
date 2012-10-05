@@ -101,8 +101,9 @@ class Device(object):
         """Receive a response and return only data, but check the packet first
 
         """
-        packet = self.receive_response_packet(receive_byte_count, self._response_buffer_packet)
-        return packet.data()
+        packet = self.receive_response_packet(receive_byte_count)
+        packet.check(**check_parameters)
+        return packet.data
 
     def receive_response_packet(self, receive_byte_count=None, packet=None):
         """Receive a response and return the received packet, optionally read *receive_byte_count* sized byte chunks at once into the specified *packet*
@@ -119,16 +120,18 @@ class Device(object):
         packet : ResponsePacket
             Packet created from the protocol module (specified during initialization) or the one passed to this method
         """
-        if packet is not None:
+        if packet is None:
             packet = self.protocol.ResponsePacket()
         if receive_byte_count is None:
             receive_byte_count = self.receive_byte_count
         while True:
-            remnant = packet.extract(self.data_buffer)
-            if isinstance(remnant, bytearray):
+            start, end = self.find(self.data_buffer)
+            if start is not None:
+                end += 1 # will be using slices, not indexes
+                packet.raw_packet = memoryview(self.data_buffer)[start:end]
+                self.data_buffer = self.data_buffer[end:]
                 break
             self.data_buffer.extend(self.interface.receive_data(receive_byte_count))
-        self.data_buffer = remnant
         return packet
     
     def query(self): #useful ? just calling two methods
