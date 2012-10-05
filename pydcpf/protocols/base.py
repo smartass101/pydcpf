@@ -10,7 +10,7 @@ class RequestPacket(object):
 
     For most protocols this class may be the same as :class:`ResponsePacket`
     """
-    packet_length = 0
+    minimum_packet_length = 0
     
     def __init__(self, raw_packet=None, **packet_parameters):
         """Initialize the packet either from the *raw_packet* or from keyword arguments or just simply create it if nothing is specified
@@ -34,8 +34,7 @@ class RequestPacket(object):
             self.raw_packet = memoryview(raw_packet)
         elif packet_parameters != {}:
             if 'DATA' in packet_parameters:
-                self.packet_length += len(packet_parameters['DATA'])
-            self.raw_packet = memoryview(bytearray(self.packet_length))
+                self.raw_packet = memoryview(bytearray(self.minimum_packet_length + len(packet_parameters['DATA'])))
             for name, value in packet_parameters.iteritems():
                 setattr(self, name, value)
 
@@ -74,9 +73,9 @@ class RequestPacket(object):
         If you plan on using these properties to set the respective portions of the :attr:`ResponsePacket.raw_buffer`, it is your duty to make sure that the raw_buffer has enough space for the data
         """
         if code is not None:
-            self.packet_length += struct.calcsize(code)
+            cls.minimum_packet_length += struct.calcsize(code)
         elif end_position > 0:
-            self.packet_length += end_position - start_position
+            cls.minimum_packet_length += end_position - start_position
         if get_function is None:
             if end_position is None: #want just simple size delimited
                 def fget(self):
