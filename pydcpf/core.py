@@ -123,14 +123,10 @@ class Device(object):
             packet = self.protocol.ResponsePacket()
         if receive_byte_count is None:
             receive_byte_count = self.receive_byte_count
-        while True:
-            start, end = self.find(self.data_buffer)
-            if start is not None:
-                end += 1 # will be using slices, not indexes
-                packet.raw_packet = memoryview(self.data_buffer)[start:end]
-                self.data_buffer = self.data_buffer[end:]
-                break
-            self.data_buffer.extend(self.interface.receive_data(receive_byte_count))
+        packet.raw_packet = self.data_buffer
+        while not packet.find():
+            packet.raw_packet.extend(self.interface.receive_data(receive_byte_count))
+        self.data_buffer = packet.raw_packet[packet.start + packet.length:]
         return packet
     
     def query(self): #useful ? just calling two methods
