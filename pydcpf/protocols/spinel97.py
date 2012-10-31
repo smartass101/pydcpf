@@ -12,11 +12,7 @@ class Spinel97BasePacket(SpinelBasePacket):
         packet = self.raw_packet
         for i in xrange(self.start, end):
             SUM -= packet[i]
-        while True: #simulate byte overrun
-            if SUM >= 0:
-                break
-            SUM += 256
-        return SUM
+        return abs(SUM % 256)
     
     def check(self):
         if self['ACK'] != '\x00':
