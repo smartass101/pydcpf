@@ -1,8 +1,9 @@
 """This module provides the base :class:`Interface` class for documentation purposes."""
+
+__all__ = ['Interface']
+
 class Interface(object):
     """Base class for device data transmission"""
-    address = None
-    server = None
     def __init__(self, **kwargs):
         """Initialize the interface using the keyword arguments (implementation dependent).
 
@@ -27,7 +28,7 @@ class Interface(object):
         """Disconnect the interface, possibly in a special way if serving.
         
          Parameters
-        ----------
+        -----------
         server : bool
             May modify the behavior of the method depending on the implementation, e.g. if True, :meth:`Interface.disconnect` may take a few more action to clean up the interface properly.
             For simpler interfaces, the server and client behavior may be the same.      """
