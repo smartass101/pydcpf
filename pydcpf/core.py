@@ -7,7 +7,7 @@ class Device(object):
 
     Uses a subclass of :class:`interfaces.base.Interface` class for data transmission and sublcasses of :class:`protocols.base.RequestPacket` and :class:`protocols.base.ResponsePacket` for data encoding and decoding respectively.
     """
-    def __init__(self, address, protocol_module, interface_module=None, send_byte_count=8192, receive_byte_count=8192, connect=True, serve=False, **interface_kwargs):
+    def __init__(self, address, protocol_module, interface_module=None, send_byte_count=0, receive_byte_count=8192, connect=True, serve=False, **interface_kwargs):
         """Initialize the device
 
         Parameters
@@ -40,19 +40,18 @@ class Device(object):
             protocol_module = __import__(protocol_module, fromlist=[''])
         self.protocol = protocol_module
         self._request_buffer_packet = protocol_module.RequestPacket()
-        if interface_module: #was explicitely specified
-            if not isinstance(interface_module, ModuleType):
-                interface_module = __import__(interface_module, fromlist=[''])
-        else:
-            if isinstance(address, (int, str)): #seems to be a serial device
-                interface_module = __import__('pydcpf.interfaces.serial')
-            elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a scoket address
-                interface_module = __import__('pydcpf.interfaces.socket')
+        if not isinstance(interface_module, ModuleType):
+            if interface_module is None:
+                if isinstance(address, (int, str)): #seems to be a serial device
+                    interface_module = 'pydcpf.interfaces.serial'
+                elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a scoket address
+                    interface_module = 'pydcpf.interfaces.socket_interface'                
+            interface_module = __import__(interface_module, fromlist=[''])
         self.interface = interface_module.Interface(**interface_kwargs)
         if connect:
             self.connect()
         
-    def connect(address=None, serve=None):
+    def connect(self, address=None, serve=None):
         """Connect the device, optionally override the Device.address ad Device.serve attributes (same form and meaning as in :meth:`Device.__init__`)"""
         if address is None:
             address = self.address
@@ -93,7 +92,8 @@ class Device(object):
         **packet_parameters
             keyword arguments containing parameters for packet creation
         """
-        self.send_request_packet(self._request_buffer_packet.__init__(**packet_parameters), send_byte_count)
+        self._request_buffer_packet.__init__(**packet_parameters)
+        self.send_request_packet(self._request_buffer_packet, send_byte_count)
             
 
     def receive_response(self, receive_byte_count=None, **check_parameters):
@@ -102,7 +102,7 @@ class Device(object):
         """
         packet = self.receive_response_packet(receive_byte_count)
         packet.check(**check_parameters)
-        return packet.data
+        return packet.DATA
 
     def receive_response_packet(self, receive_byte_count=None, packet=None):
         """Receive a response and return the received packet, optionally read *receive_byte_count* sized byte chunks at once into the specified *packet*
@@ -129,8 +129,9 @@ class Device(object):
         self.data_buffer = packet.raw_packet[packet.start + packet.length:]
         return packet
     
-    def query(self): #useful ? just calling two methods
-        pass
+    def query(self, send_byte_count=None, receive_byte_count=None, packet_parameters=dict(), check_parameters=dict() ): #useful ? just calling two methods
+        self.send_request(send_byte_count, **packet_parameters)
+        return self.receive_response(receive_byte_count, **check_parameters)
     
 
 class Server(object):
