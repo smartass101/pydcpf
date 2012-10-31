@@ -48,6 +48,7 @@ class RequestPacket(object):
 
     def __getitem__(self, name):
         start_position, length_or_code, end_position = self.__class__.elements_definitions_dict[name]
+        start_position += self.start
         if start_position < 0:
             start_position += self.length
         if isinstance(length_or_code, str): #is a code
@@ -64,6 +65,7 @@ class RequestPacket(object):
 
     def __setitem__(self, name, value):
         start_position, length_or_code, end_position = self.__class__.elements_definitions_dict[name]
+        start_position += self.start
         if start_position < 0:
             start_position += self.length
         if isinstance(length_or_code, str): #is a code

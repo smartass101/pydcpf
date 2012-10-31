@@ -1,5 +1,4 @@
 from .spinelbase import SpinelBasePacket, ACKError
-from random import randint
 
 __all__ = ["RequestPacket", "ResponsePacket"]
 
@@ -14,7 +13,7 @@ class Spinel97BasePacket(SpinelBasePacket):
         for i in xrange(self.start, end):
             SUM -= packet[i]
         while True: #simulate byte overrun
-            if SUM > 0:
+            if SUM >= 0:
                 break
             SUM += 256
         return SUM
@@ -40,7 +39,7 @@ class RequestPacket(Spinel97BasePacket):
                 NUM = self.length - 4
             self['NUM'] = NUM
             if SIG is None:
-                SIG = randint(0, 255)
+                SIG = 2
             self['SIG'] = SIG
             if SUMA is None:
                 SUMA = self.calculate_checksum()
@@ -57,7 +56,7 @@ class ResponsePacket(Spinel97BasePacket):
                 NUM = self.length - 4
             self['NUM'] = NUM
             if SIG is None:
-                SIG = randint(0, 255)
+                SIG = 2
             self['SIG'] = SIG
             if SUMA is None:
                 SUMA = self.calculate_checksum()
