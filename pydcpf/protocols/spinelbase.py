@@ -31,7 +31,10 @@ class ACKError(Exception):
             int_ACK = int(self.ACK, 16)
         except ValueError: #must be something like '\x0d', so use ord
             int_ACK = ord(self.ACK)
-        return "Non-zero acknowledgment code " + hex(int_ACK) + ": " + self.__class__.descriptions[int_ACK]
+        try:
+            return "Non-zero acknowledgment code " + hex(int_ACK) + ": " + self.__class__.descriptions[int_ACK]
+        except KeyError: #unknow error code
+            return "Unknown acknowledgment code " + hex(int_ACK) 
 
     
 class SpinelBasePacket(ResponsePacket):
