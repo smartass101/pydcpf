@@ -23,18 +23,18 @@ class ACKError(Exception):
             0x0f : "Range overrun" #automatically sent
         }
     
-    def __init__(self, ACK_code):
-        self.ACK = ACK_code
+    def __init__(self, packet):
+        self.packet = packet
         
     def __str__(self):
         try:
-            int_ACK = int(self.ACK, 16)
+            int_ACK = int(self.packet['ACK'], 16)
         except ValueError: #must be something like '\x0d', so use ord
-            int_ACK = ord(self.ACK)
+            int_ACK = ord(self.packet['ACK'])
         try:
-            return "Non-zero acknowledgment code " + hex(int_ACK) + ": " + self.__class__.descriptions[int_ACK]
+            return "Non-zero acknowledgment code 0x%02x: " %  int_ACK + self.__class__.descriptions[int_ACK]
         except KeyError: #unknow error code
-            return "Unknown acknowledgment code " + hex(int_ACK) 
+            return "Unknown acknowledgment code 0x%02x" % int_ACK
 
     
 class SpinelBasePacket(ResponsePacket):

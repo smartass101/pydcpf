@@ -5,7 +5,7 @@ __all__ = ["RequestPacket", "ResponsePacket"]
 class Spinel66BasePacket(SpinelBasePacket):
     def check(self):
         if self['ACK'] != '0':
-            raise ACKError(self['ACK'])
+            raise ACKError(self)
 
 Spinel66BasePacket.register_element('ADR', "Module address character", start_position=2, length=1)
 Spinel66BasePacket.register_element('DATA', "Data contained in packet", start_position=4, end_position=-1)

@@ -3,7 +3,11 @@ from .spinelbase import SpinelBasePacket, ACKError
 __all__ = ["RequestPacket", "ResponsePacket"]
 
 class CheckSumError(Exception):
-    pass
+    def __init__(self, packet):
+        self.packet = packet
+
+    def __str__(self):
+        return "Packet checksum is 0x%02x, but the SUMA checksum byte is 0x%02x" % (self.packet.calculate_checksum(), self.packet['SUMA'])
 
 class Spinel97BasePacket(SpinelBasePacket):
     def calculate_checksum(self):
@@ -16,9 +20,9 @@ class Spinel97BasePacket(SpinelBasePacket):
     
     def check(self):
         if self['ACK'] != '\x00':
-            raise ACKError(self['ACK'])
+            raise ACKError(self)
         if self['SUMA'] != self.calculate_checksum():
-            raise CheckSumError
+            raise CheckSumError(self)
 
     def find(self):
         sup = super(Spinel97BasePacket, self)
