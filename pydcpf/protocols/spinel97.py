@@ -20,6 +20,25 @@ class Spinel97BasePacket(SpinelBasePacket):
         if self['SUMA'] != self.calculate_checksum():
             raise CheckSumError
 
+    def find(self):
+        sup = super(Spinel97BasePacket, self)
+        full_buffer_length = len(self.raw_packet)
+        if sup.find(): #means we have a candidate at all
+            while full_buffer_length - self.start >= 9:
+                # first check whether it could be a valid packet
+                # based on the count of necessary bytes in packet
+                packet_len = self['NUM'] + 4
+                CR_position = self.start + packet_len
+                if CR_position <= full_buffer_length and self.raw_packet[CR_position] == 13:
+                    # if the last byte is CR as reported by NUM, ord('\r') == 13
+                    self.length = packet_len
+                    return True
+                if not sup.find(self.start + 1): #look for another candidate
+                    return False
+        else:
+            return False
+            
+
 Spinel97BasePacket.register_element('NUM', 'Number of bytes in packet after NUM', start_position=2, code='>H')
 Spinel97BasePacket.register_element('ADR', 'Module address number', start_position=4, code='>B')
 Spinel97BasePacket.register_element('SIG', 'Signature number', start_position=5, code='>B')

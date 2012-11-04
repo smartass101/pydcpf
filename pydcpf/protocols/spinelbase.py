@@ -38,15 +38,13 @@ class ACKError(Exception):
 
     
 class SpinelBasePacket(ResponsePacket):
-    def find(self):
-        raw_packet = self.raw_packet
-        start = raw_packet.find('*')
-        if start == -1:
+    def find(self, buffer_start=0):
+        raw_packet = self.raw_packet #minimize attr lookups
+        try:
+            start = raw_packet.index('*', buffer_start)
+            end = raw_packet.index('\r', start)
+        except ValueError:
             return False
-        end = raw_packet.find('\r', start)
-        if end == -1:
-            return False
-        start = raw_packet.rfind('*', start, end)
         self.start, self.length = start, end - start + 1
         return True
 
