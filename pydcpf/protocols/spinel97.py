@@ -52,8 +52,10 @@ Spinel97BasePacket.register_element('SUMA', 'Checksum number', start_position=-2
 class RequestPacket(Spinel97BasePacket):
     """RequestPacket class for the Spinel 97 protocol format"""
     def __init__(self, INST=None, ADR=0xfe, DATA='', NUM=None, SIG=None, SUMA=None, raw_packet=None ):
-        if INST is not None or raw_packet is not None:
-            super(RequestPacket, self).__init__(raw_packet=raw_packet, PRE='*', FRM=97, ADR=ADR, INST=INST, DATA=DATA, CR='\r')
+        if raw_packet is not None:
+            super(RequestPacket, self).__init__(raw_packet=raw_packet)
+        elif INST is not None:
+            super(RequestPacket, self).__init__(PRE='*', FRM=97, ADR=ADR, INST=INST, DATA=DATA, CR='\r')
             if NUM is None:
                 NUM = self.length - 4
             self['NUM'] = NUM
