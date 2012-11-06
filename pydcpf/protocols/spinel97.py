@@ -32,7 +32,7 @@ class Spinel97BasePacket(SpinelBasePacket):
                 # first check whether it could be a valid packet
                 # based on the count of necessary bytes in packet
                 packet_len = self['NUM'] + 4
-                CR_position = self.start + packet_len
+                CR_position = self.start + packet_len - 1 #CR_position must be an index
                 if CR_position < full_buffer_length and self.raw_packet[CR_position] == 13:
                     # if the last byte is CR as reported by NUM, ord('\r') == 13
                     self.length = packet_len
