@@ -7,8 +7,10 @@ class Interface(object):
     """Base class for device data transmission"""
 
     
-    def __init__(self, **kwargs):
+    def __init__(self, timeout, **kwargs):
         """Initialize the interface using the keyword arguments (implementation dependent).
+
+        The timout argument represents a timout in seconds fro connecting, reading writing. If 0, no timeout should be set.
 
         The interface must not connect immediately after initialization, :meth:`Interface.connect` must be used for that.
         """

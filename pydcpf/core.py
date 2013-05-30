@@ -10,7 +10,7 @@ class Device(object):
     """
 
 
-    def __init__(self, address, protocol_module, interface_module=None, send_byte_count=0, receive_byte_count=8192, connect=True, serve=False, **interface_kwargs):
+    def __init__(self, address, protocol_module, interface_module=None, timeout=1.0, send_byte_count=0, receive_byte_count=8192, connect=True, serve=False, **interface_kwargs):
         """Initialize the device
 
         Parameters
@@ -23,6 +23,10 @@ class Device(object):
         interface_module : str or module, optional
             From where to load the Interface class
             If not specified, the module is guessed from the *address* parameter
+        timeout : float, optional
+            timeout for connecting, reading and writing
+            if 0, no timeout is set
+            the error thrown on timout depends on the implementation of the interface module
         send_byte_count : int or None, optional
             Size of byte chunks to send at once
             If 0, the bytes will not be split into chunks
@@ -50,7 +54,7 @@ class Device(object):
                 elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a socket address
                     interface_module = 'pydcpf.interfaces.socket_interface'
             interface_module = __import__(interface_module, fromlist=[''])
-        self.interface = interface_module.Interface(**interface_kwargs)
+        self.interface = interface_module.Interface(timeout, **interface_kwargs)
         if connect:
             self.connect()
             

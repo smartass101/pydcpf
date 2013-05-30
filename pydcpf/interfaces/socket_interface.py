@@ -5,13 +5,19 @@ import socket
 class Interface(base.Interface):
     """Wrapper class around :class:`socket.socket`.
 
-    Wrapping it is necessary because after disconnecting a new socket must be created when connecting again a nad also when serving"""
+    Wrapping it is necessary because after disconnecting a new socket must be created when connecting again a nad also when serving
 
-    
-    def __init__(self, family=socket.AF_INET, type=socket.SOCK_STREAM, protocol=0, _sock=None):
-        self._socket_parameters = (family, type, protocol, _sock) # meeded in disconnecting
+    Raises :class:`socket.timeout` error on timeout"""
+
+
+    def _create_socket(self):
         self.socket = socket.socket(self._socket_parameters)
-        
+        self.socket.settimeout(self._timeout)
+    
+    def __init__(self, timeout, family=socket.AF_INET, type=socket.SOCK_STREAM, protocol=0, _sock=None):
+        self._socket_parameters = (family, type, protocol, _sock) # meeded in disconnecting
+        self._timeout = timeout
+        self._create_socket()
         
     def connect(self, address, serve):
         if serve:
@@ -24,8 +30,7 @@ class Interface(base.Interface):
 
     def disconnect(self):
         self.socket.close()
-        self.socket = socket.socket(self._socket_parameters)
-        
+        self._create_socket()
 
     def send_data(self, data, flags=0):
         self.socket.sendall(data, flags)
