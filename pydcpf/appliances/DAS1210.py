@@ -1,5 +1,5 @@
 
-"""API for the DAS1210 device used at the GOLEM reactor, FJFI, CVUT"""
+"""API for the DAS1210 device made by Paouch s.r.o. used at the GOLEM reactor, FJFI, CVUT"""
 
 from .. import core
 import struct
