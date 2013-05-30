@@ -56,17 +56,22 @@ class Device(object):
             
         
     def connect(self, address=None, serve=None):
-        """Connect the device, optionally override the Device.address ad Device.serve attributes (same form and meaning as in :meth:`Device.__init__`)"""
+        """Connect to the device, optionally override and set the Device.address ad Device.serve attributes (same form and meaning as in :meth:`Device.__init__`)"""
         if address is None:
             address = self.address
+        else:
+            self.address = address
         if serve is None:
             serve = self.serve
+        else:
+            self.serve = serve
         self.interface.connect(address, serve)
 
 
-    def serve(self): #useful?
-        pass
-
+    def disconnect(self):
+        """Disconnect from the device in such a way that it can be connected to again"""
+        self.interface.disconnect(self.address, self.serve)
+        
 
     def send_request_packet(self, packet, send_byte_count=None):
         """Send a request packet, optionally send *send_byte_count* size byte chunks at once
