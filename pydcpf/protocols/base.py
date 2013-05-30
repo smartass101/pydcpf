@@ -153,7 +153,13 @@ class RequestPacket(object):
             def del_function(self):
                 cls._del_element_substring(self, name)
         setattr(cls, name, property(fget=get_function, fset=set_function, fdel=del_function, doc=docstring))
-    
+
+
+    def __iter__(self):
+        """Return and iterator over (element_name, value) pairs"""
+        for name in self.__class__.elements_definitions_dict.iterkeys():
+            yield (name, getattr(self, name))
+            
 
 
 class ResponsePacket(RequestPacket):
