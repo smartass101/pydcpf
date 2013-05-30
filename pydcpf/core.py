@@ -2,11 +2,14 @@
 
 from types import ModuleType
 
+
 class Device(object):
     """Core class used for communication with a device
 
     Uses a subclass of :class:`interfaces.base.Interface` class for data transmission and sublcasses of :class:`protocols.base.RequestPacket` and :class:`protocols.base.ResponsePacket` for data encoding and decoding respectively.
     """
+
+
     def __init__(self, address, protocol_module, interface_module=None, send_byte_count=0, receive_byte_count=8192, connect=True, serve=False, **interface_kwargs):
         """Initialize the device
 
@@ -44,12 +47,13 @@ class Device(object):
             if interface_module is None:
                 if isinstance(address, (int, str)): #seems to be a serial device
                     interface_module = 'pydcpf.interfaces.serial'
-                elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a scoket address
-                    interface_module = 'pydcpf.interfaces.socket_interface'                
+                elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a socket address
+                    interface_module = 'pydcpf.interfaces.socket_interface'
             interface_module = __import__(interface_module, fromlist=[''])
         self.interface = interface_module.Interface(**interface_kwargs)
         if connect:
             self.connect()
+            
         
     def connect(self, address=None, serve=None):
         """Connect the device, optionally override the Device.address ad Device.serve attributes (same form and meaning as in :meth:`Device.__init__`)"""
@@ -58,6 +62,7 @@ class Device(object):
         if serve is None:
             serve = self.serve
         self.interface.connect(address, serve)
+
 
     def serve(self): #useful?
         pass
@@ -81,6 +86,7 @@ class Device(object):
         else: #may split
             for delimiter in xrange(0, len(raw_packet), send_byte_count):
                 self.interface.send_data(raw_packet[delimiter:delimiter + send_byte_count])
+
                 
     def send_request(self, send_byte_count=None, **packet_parameters):
         """Send a request, optionally send *send_byte_count* size byte chunks at once
@@ -96,13 +102,26 @@ class Device(object):
         self.send_request_packet(self._request_buffer_packet, send_byte_count)
             
 
+
     def receive_response(self, receive_byte_count=None, **check_parameters):
         """Receive a response and return only data, but check the packet first
 
+        Parameters
+        ----------
+        receive_byte_count : int, optional
+            if specified, this will override the Device.receive_byte_count attribute specified during initialization
+        **check_parameters
+            keyword arguments containing parameters for packet validation
+
+        Returns
+        -------
+        data : str or buffer
+            the data contained within the received packet DATA attribute
         """
         packet = self.receive_response_packet(receive_byte_count)
         packet.check(**check_parameters)
         return packet.DATA
+
 
     def receive_response_packet(self, receive_byte_count=None, packet=None):
         """Receive a response and return the received packet, optionally read *receive_byte_count* sized byte chunks at once into the specified *packet*
@@ -128,11 +147,19 @@ class Device(object):
             packet.raw_packet.extend(self.interface.receive_data(receive_byte_count))
         self.data_buffer = packet.raw_packet[packet.start + packet.length:]
         return packet
+
     
-    def query(self, send_byte_count=None, receive_byte_count=None, packet_parameters=dict(), check_parameters=dict() ): #useful ? just calling two methods
+    def query(self, send_byte_count=None, receive_byte_count=None, check_parameters=dict(), **packet_parameters):
+        """Query the device
+
+        Essentially just a wraper around :method:`Device.send_request` and
+        :method:`Device.receive_response`
+        
+        """
         self.send_request(send_byte_count, **packet_parameters)
         return self.receive_response(receive_byte_count, **check_parameters)
     
+
 
 class Server(object):
     """Serves Devices

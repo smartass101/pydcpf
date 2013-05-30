@@ -29,7 +29,7 @@ class RequestPacket(object):
 
         Note
         ----
-        This method should NOT completely overridden, define your own packet structure using :meth:`RequestPacket.register_element` instead or remember to call it at the end of your own __init__!
+        This method should NOT be completely overridden, define your own packet structure using :meth:`RequestPacket.register_element` instead or remember to call it at the end of your own __init__!
         """
         if raw_packet is not None:
             if isinstance(raw_packet, int):
