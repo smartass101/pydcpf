@@ -5,6 +5,8 @@ __all__ = ["RequestPacket", "ResponsePacket"]
 
 import struct
 
+
+
 class RequestPacket(object):
     """Request packet class
 
@@ -14,6 +16,7 @@ class RequestPacket(object):
     """
     minimum_packet_length = 0
     elements_definitions_dict = dict()
+    
     
     def __init__(self, raw_packet=None, **packet_parameters):
         """Initialize the packet either from the *raw_packet* or from keyword arguments or just simply create it if nothing is specified
@@ -44,9 +47,11 @@ class RequestPacket(object):
             self.raw_packet = bytearray(minimum_packet_length)
             self.start, self.length = 0, len(self.raw_packet)
             for name, value in packet_parameters.iteritems():
-                self[name] = value
+                setattr(self, name, value)
+                
 
-    def __getitem__(self, name):
+    def _get_element_substring(self, name):
+        """Return a character or substring representing the named packet element"""
         start_position, length_or_code, end_position = self.__class__.elements_definitions_dict[name]
         start_position += self.start
         if start_position < 0:
@@ -63,7 +68,8 @@ class RequestPacket(object):
             return buffer(self.raw_packet, start_position, self.length + end_position - start_position)
         
 
-    def __setitem__(self, name, value):
+    def _set_element_substring(self, name, value):
+        """Set the named packet element to a character or substring value"""
         start_position, length_or_code, end_position = self.__class__.elements_definitions_dict[name]
         start_position += self.start
         if start_position < 0:
@@ -76,13 +82,16 @@ class RequestPacket(object):
             self.raw_packet[start_position] = value
         elif end_position is not None: 
             self.raw_packet[start_position:end_position] = value
+            
 
-    def __delitem__(self, name):
+    def _del_element_substring(self, name):
+        """Delete a character or substring in the raw_packet representing the named packet element"""
         length_or_code = self.__class__.elements_definitions_dict.pop(name)[1]
         if isinstance(length_or_code, str):
             self.__class__.minimum_packet_length -= struct.calcsize(length_or_code)
         elif length_or_code > 0: #so cannot be None
             self.__class__.minimum_packet_length -= length_or_code
+            
         
     @classmethod
     def register_element(cls, name, docstring, start_position=None, code=None, end_position=None, set_function=None, length=None, get_function=None, del_function=None):
@@ -136,13 +145,13 @@ class RequestPacket(object):
         cls.elements_definitions_dict[name] = (start_position, length_or_code, end_position)
         if get_function is None:
             def get_function(self):
-                return cls.__getitem__(self, name)
+                return cls._get_element_substring(self, name)
         if set_function is None:
             def set_function(self, value):
-                cls.__setitem__(self, name, value)
+                cls._set_element_substring(self, name, value)
         if del_function is None:
             def del_function(self):
-                cls.__delitem__(self, name)
+                cls._del_element_substring(self, name)
         setattr(cls, name, property(fget=get_function, fset=set_function, fdel=del_function, doc=docstring))
     
 
@@ -155,6 +164,7 @@ class ResponsePacket(RequestPacket):
     For most protocols this class may be the same as :class:`RequestPacket`
     """
 
+
     def find(self):
         """Try to find a WHOLE packet in :attr:`ResponsePacket.raw_packet`
 
@@ -166,6 +176,7 @@ class ResponsePacket(RequestPacket):
             True if a whole packet was found, False otherwise
         """
         pass
+
 
     def check(self, **parameters):
         """Check and verify the packet, optionally modify the verification method based on keyword *parameters*
