@@ -26,7 +26,7 @@ class Device(object):
         timeout : float, optional
             timeout for connecting, reading and writing
             if 0, no timeout is set
-            the error thrown on timout depends on the implementation of the interface module
+            the error raised on timout depends on the implementation of the interface module
         send_byte_count : int or None, optional
             Size of byte chunks to send at once
             If 0, the bytes will not be split into chunks
