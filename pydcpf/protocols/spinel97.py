@@ -104,7 +104,7 @@ class ResponsePacket(Spinel97BasePacket):
             self.NUM = NUM
             if SIG is None:
                 SIG = 2
-            self.SIG. = SIG
+            self.SIG = SIG
             if SUMA is None:
                 SUMA = self.calculate_checksum()
             self.SUMA = SUMA
