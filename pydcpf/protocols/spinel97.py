@@ -34,8 +34,11 @@ class Spinel97BasePacket(SpinelBasePacket):
     def check(self):
         if self.SUMA != self.calculate_checksum():
             raise CheckSumError(self)
-        if self.ACK != '\x00':
-            raise ACKError(self)
+        try:
+            if self.ACK != '\x00':
+                raise ACKError(self)
+        except AttributeError:
+            pass # must be a RequestPacket which has INST instead of ACK
 
 
     def find(self):

@@ -21,6 +21,10 @@ class TestSpinel97(ut.TestCase):
         self.response_packet.ACK = '\x05'
         self.response_packet.SUMA = self.response_packet.calculate_checksum() # correct the checksum to prevent check raising CheckSumError 
         self.assertRaises(s97.ACKError, self.response_packet.check)
+        try:
+            self.request_packet.check() # should check out ok, ACK should not be reported
+        except Exception as e:
+            self.fail("request_packet.check() raised " + repr(e))
 
 
 if __name__ == "__main__":
