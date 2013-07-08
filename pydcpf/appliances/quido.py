@@ -19,8 +19,8 @@ class Device(core.Device):
     """
 
 
-    def __init__(self, inputs, outputs, **kwargs):
-        super(Device, self).__init__(protocol_module='pydcpf.protocols.spinel97', **kwargs)
+    def __init__(self, address, **kwargs):
+        super(Device, self).__init__(address, protocol_module='pydcpf.protocols.spinel97', **kwargs)
 
 
     def get_outputs_state(self, address):
