@@ -32,10 +32,10 @@ class Spinel97BasePacket(SpinelBasePacket):
 
     
     def check(self):
-        if self.ACK != '\x00':
-            raise ACKError(self)
         if self.SUMA != self.calculate_checksum():
             raise CheckSumError(self)
+        if self.ACK != '\x00':
+            raise ACKError(self)
 
 
     def find(self):
