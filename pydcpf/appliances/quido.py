@@ -23,35 +23,55 @@ class Device(core.Device):
         super(Device, self).__init__(protocol_module='pydcpf.protocols.spinel97', **kwargs)
 
 
-    def get_outputs_state(self, outputs_count):
+    def get_outputs_state(self, address):
         """Return the state of all outputs as a list
+        on the device with the specified address
+
+        Returns
+        -------
+        outputs_state : list of bool
+            length depends of number of outputs on device
+            True if active (high voltage)
+            False if inactive (low voltage)
+        """
+        data = self.query(INST='\x30', ADR=address)
+        fmt = outputs_count_fmts[len(data)]
+        return reversed(                # as specified in documentation
+            [ bool(int(i)) for i in
+              bin(struct.unpack_from(fmt, data))[2:] # crunch down to binary string representation
+              ])
+
+        
+    def get_output_state(self, output_number, address):
+        """Return the state of output given by *output_number*
+        on the device with the specified address
+
+        Returns
+
+        Note
+        ----
+        This method has to call :meth:`Device.get_outputs_state`
+        to get the status of all outputs first anyways,
+        so it's more resourceful to batch output querying
+        """
+        return self.get_outputs_state(address)[output_number - 1] # list indexed from 0
+    
+
+    def set_outputs_state(self, *outputs_state):
+        """
+        Set each specified output to the given state
 
         Parameters
         ----------
-        outputs_count : int
-            number of outputs on the device
-            the message structure is different for devices with 8, 16 and 32 outputs
-        """
-        data = self.query(INST='\x30')
-        fmt = outputs_count_fmts[len(data)]
-        return [ bool(int(i)) for i in bin(struct.unpack_from(fmt, data))[2:] ]
-
-        
-    def get_outputs_state(self, input_nr):
-        input_nr -= 1
-        return self.get_outputs_state((input_nr // 8 + 1) * 8)[input_nr]
-    
-
-    def set_outputs_states(self, *outputs_states):
-        """
-        outputs_states : list of ints
-            output number to operate in,
-            set axtive (high voltage) if positive,
+        outputs_state : list of ints
+            output numbers to operate on,
+            set active (high voltage) if positive,
             inactive (low voltage) if negative
+            no order is required, arbitrary outputs can be given
         """
-        return self.instruct(
+        return self.query(
             INST='\x20',
-            DATA=struct.pack("%ib" % len(outputs_states),
+            DATA=struct.pack("%ib" % len(outputs_state),
                              # 1 bit H/L (-/+ bit) + 7 bits for output number from 1 to 127
                              *[ abs(i) if i < 0 else i - 128 for i in outputs_states ]),
             )
