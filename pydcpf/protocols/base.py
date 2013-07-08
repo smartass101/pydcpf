@@ -95,7 +95,7 @@ class RequestPacket(object):
         
     @classmethod
     def register_element(cls, name, docstring, start_position=None, code=None, end_position=None, set_function=None, length=None, get_function=None, del_function=None):
-        """Register an element of the packet structure and make a :class:`property` for accessing a part of the packet with Packet.name  and enable Packet[name] syntax with a *docstring* which will either unpack or pack a value according to the *format* beginning at *start_position* or set or get a buffer starting at *start_position* and ending at *end_position* or provide your own *set_function*, *get_function* and *del_function*
+        """Register an element of the packet structure and make a :class:`property` for accessing a part of the packet with Packet.name  with a *docstring* which will either unpack or pack a value according to the *code* beginning at *start_position* or set or get a buffer starting at *start_position* and ending at *end_position* or provide your own *set_function*, *get_function* and *del_function*
 
         ::
         class RequestPacket(pydcpf.protocols.base.RequestPacket):
@@ -119,7 +119,7 @@ class RequestPacket(object):
             mutually exclusive with *code*
             may be negative as an index relative to the end
         length : int, optional
-            if the byte length cannot be deduced from *code* or *start_position* and *end_position* (e.g. if you specify your own functions) it should be provided so :meth:`RequestPacket.__init__` allocates enough memory, otherwise it is calculated from the length of the provided arguments
+            if the byte length cannot be deduced from *code* or *start_position* and *end_position* (e.g. if you specify your own functions or *end_position* is negative) it should be provided so :meth:`RequestPacket.__init__` allocates enough memory, otherwise it is calculated from the length of the provided arguments
         get_function : function, optional
             if not None, it will be used instead of creating one based on *start_position*, *code* or *end_position*
         set_function : function, optional
