@@ -35,11 +35,13 @@ class Device(core.Device):
             False if inactive (low voltage)
         """
         data = self.query(INST='\x30', ADR=address)
-        fmt = outputs_count_fmts[len(data)]
-        return reversed(                # as specified in documentation
-            [ bool(int(i)) for i in
-              bin(struct.unpack_from(fmt, data))[2:] # crunch down to binary string representation
-              ])
+        data_len = len(data)
+        fmt = outputs_count_fmts[data_len]
+        outputs_state = [ bool(int(i)) for i in
+              ("%0" + "%ii" % 8**data_len) % int(bin(struct.unpack_from(fmt, data)[0])[2:]) # crunch down to padded binary string representation
+              ]
+        outputs_state.reverse()        # reverse in place as specified in docs
+        return outputs_state
 
         
     def get_output_state(self, output_number, address):
@@ -73,6 +75,6 @@ class Device(core.Device):
             INST='\x20',
             DATA=struct.pack("%ib" % len(outputs_state),
                              # 1 bit H/L (-/+ bit) + 7 bits for output number from 1 to 127
-                             *[ abs(i) if i < 0 else i - 128 for i in outputs_states ]),
+                             *[ abs(i) if i < 0 else i - 128 for i in outputs_state ]),
             )
 
