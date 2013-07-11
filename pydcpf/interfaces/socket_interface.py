@@ -11,11 +11,11 @@ class Interface(base.Interface):
 
 
     def _create_socket(self):
-        self.socket = socket.socket(self._socket_parameters)
+        self.socket = socket.socket(*self._socket_parameters)
         self.socket.settimeout(self._timeout)
     
     def __init__(self, timeout, family=socket.AF_INET, type=socket.SOCK_STREAM, protocol=0, _sock=None):
-        self._socket_parameters = (family, type, protocol, _sock) # meeded in disconnecting
+        self._socket_parameters = (family, type, protocol, _sock) # needed in disconnecting
         self._timeout = timeout
         self._create_socket()
         
@@ -28,7 +28,7 @@ class Interface(base.Interface):
             self.socket.connect(address)
             
 
-    def disconnect(self):
+    def disconnect(self, address, serve):
         self.socket.close()
         self._create_socket()
 
