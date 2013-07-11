@@ -4,7 +4,7 @@ from .. import core
 import struct 
 
 
-outputs_count_fmts = {
+_outputs_inputs_count_fmts = {
     1 : 'B',
     2 : 'H',
     4 : 'I',
@@ -23,6 +23,23 @@ class Device(core.Device):
         super(Device, self).__init__(address, protocol_module='pydcpf.protocols.spinel97', **kwargs)
 
 
+    def _decode_inputs_outputs_state(self, data):
+        """Common code for decoding responses
+        describing inputs or outputs state
+
+        Note
+        ----
+            only for max 32 inputs/outputs
+        """
+        data_len = len(data)
+        fmt = _outputs_inputs_count_fmts[data_len]
+        state = [ bool(int(i)) for i in
+              ("%0" + "%ii" % 8**data_len) % int(bin(struct.unpack_from(fmt, data)[0])[2:]) # crunch down to padded binary string representation
+              ]
+        state.reverse()        # reverse in place as specified in docs
+        return state
+
+
     def get_outputs_state(self, address):
         """Return the state of all outputs as a list
         on the device with the specified address
@@ -34,14 +51,9 @@ class Device(core.Device):
             True if active (high voltage)
             False if inactive (low voltage)
         """
-        data = self.query(INST='\x30', ADR=address)
-        data_len = len(data)
-        fmt = outputs_count_fmts[data_len]
-        outputs_state = [ bool(int(i)) for i in
-              ("%0" + "%ii" % 8**data_len) % int(bin(struct.unpack_from(fmt, data)[0])[2:]) # crunch down to padded binary string representation
-              ]
-        outputs_state.reverse()        # reverse in place as specified in docs
-        return outputs_state
+        return self._decode_inputs_outputs_state(
+            self.query(INST='\x30', ADR=address)
+            )
 
         
     def get_output_state(self, output_number, address):
@@ -49,6 +61,9 @@ class Device(core.Device):
         on the device with the specified address
 
         Returns
+        -------
+        output_state : bool
+            
 
         Note
         ----
@@ -59,7 +74,7 @@ class Device(core.Device):
         return self.get_outputs_state(address)[output_number - 1] # list indexed from 0
     
 
-    def set_outputs_state(self, *outputs_state):
+    def set_outputs_state(self, address, *outputs_state):
         """
         Set each specified output to the given state
 
@@ -78,3 +93,18 @@ class Device(core.Device):
                              *[ abs(i) if i < 0 else i - 128 for i in outputs_state ]),
             )
 
+
+    def get_inputs_state(self, address):
+        """Return the state of all inputs as a list
+        on the device with the specified address
+
+        Returns
+        -------
+        inputs_state : list of bool
+            length depends of number of inputs on device
+            True if active (high voltage)
+            False if inactive (low voltage)
+        """
+        return self._decode_inputs_outputs_state(
+            self.query(INST='\x31', ADR=address)
+            )
