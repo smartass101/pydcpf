@@ -15,8 +15,8 @@ class Device(core.Device):
         super(Device, self).__init__(address, protocol_module='pydcpf.protocols.spinel97', **kwargs)
 
 
-    def get_inputs_measured_value(self, address=0xfe):
-        """Return the values measured by the 4 channels
+    def get_inputs_measured_value_state(self, address=0xfe):
+        """Return the values measured and the state of the 4 channels
 
         Returns
         -------
@@ -42,5 +42,40 @@ class Device(core.Device):
                              ]
                             )
         return channels
-    
+
+
+    def get_inputs_measured_value(self, address=0xfe, *channels):
+        """Return the last measured value by the specified channels
+
+        This method checks the status of the reported values
+
+        Parameters
+        ----------
+        channels: *args, int
+            channels to return
+
+        Returns
+        -------
+        values : list of int
+            last measured values by the given channels
+
+        Raises
+        ------
+        ValueError: if underflow, overflow or invalid value detected or wrong channel reported
+        """
+        channels_state = self.get_inputs_measured_value_state(address)
+        values = []
+        for channel in channels:
+            channel_nr, (underflow, overflow, valid), value = channels_state[channel - 1]
+            if channel_nr == channel and valid and not underflow and not overflow:
+                values.append(value)
+            elif channel_nr != channel:
+                raise ValueError("channel %i reported channel number" % (channel, channel_nr))
+            elif underflow:
+                raise ValueError("channel %i reported underflow" % channel)
+            elif overflow:
+                raise ValueError("channel %i reported overflow" % channel)
+            elif not valid:
+                raise ValueError("channel %i reported invalid value" % channel)
+        return values
                              
