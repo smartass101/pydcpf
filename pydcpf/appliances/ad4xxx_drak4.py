@@ -37,7 +37,7 @@ class Device(core.Device):
             channels.append([ord(channel_nr),
                              # [ underflow, overflow, valid] ... [3. bit, 4. bit, 8. bit]
                              # in docs bits are indexed form 0, so there it is 2.,3.,7.
-                             [status & 8, status & 16, status & 128],
+                             [bool(status & 8), bool(status & 16), bool(status & 128)],
                              value,
                              ]
                             )
