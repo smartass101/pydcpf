@@ -15,7 +15,7 @@ class Device(core.Device):
         super(Device, self).__init__(address=address, protocol_module='pydcpf.protocols.evr116', *kwargs)
 
     def set_position(self, position):
-        hex_position = "%x" % position / 2
+        hex_position = "%x" % (position / 2)
         return self.query(IDENTIFIER='g', DATA=hex_position)
 
 
