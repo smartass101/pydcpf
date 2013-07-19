@@ -8,9 +8,11 @@ valid_command_characters += "p" + valid_command_characters.upper() # response ch
 class RequestPacket(base.RequestPacket):
 
 
-    def __init__(self, IDENTIFIER='v', DATA='?'):
+    def __init__(self, IDENTIFIER='x', DATA=''):
         super(RequestPacket, self).__init__(IDENTIFIER=IDENTIFIER, DATA=DATA, TERMINATOR='\r\n')
 
+    def check(self):
+        pass
 
     def find(self, buffer_start=0):
         raw_packet = self.raw_packet
