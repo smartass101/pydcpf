@@ -14,8 +14,6 @@ class RequestPacket(object):
 
     For most protocols this class may be the same as :class:`ResponsePacket`
     """
-    minimum_packet_length = 0
-    elements_definitions_dict = dict()
     
     
     def __init__(self, raw_packet=None, **packet_parameters):
@@ -48,7 +46,7 @@ class RequestPacket(object):
             self.start, self.length = 0, len(self.raw_packet)
             for name, value in packet_parameters.iteritems():
                 setattr(self, name, value)
-                
+
 
     def _get_element_substring(self, name):
         """Return a character or substring representing the named packet element"""
@@ -132,6 +130,16 @@ class RequestPacket(object):
         ----
         If you plan on using these properties to set the respective portions of the :attr:`ResponsePacket.raw_buffer`, it is your duty to make sure that the raw_buffer has enough space for the data
         """
+        # first make sure the class variables are present
+        try:
+            cls.minimum_packet_length
+        except AttributeError:
+            cls.minimum_packet_length = 0
+        try:
+            cls.elements_definitions_dict
+        except AttributeError:
+            cls.elements_definitions_dict = {}
+
         length_or_code = None
         if code is not None:
             cls.minimum_packet_length += struct.calcsize(code)
