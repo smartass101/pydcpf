@@ -12,7 +12,7 @@ class Device(core.Device):
 
         Serial line settings: 300 Baud, 7 bits, 2 stop bits, log. 0 >7V, log. 1 <3V 
         """
-        super(Device, self).__init__(address=address, protocol_module='pydcpf.protocols.evr116', *kwargs)
+        super(Device, self).__init__(address=address, protocol_module='pydcpf.protocols.evr116', **kwargs)
 
     def set_position(self, position):
         if position < 512 or position > 6760:
