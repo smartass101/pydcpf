@@ -50,7 +50,7 @@ class Device(object):
         if not isinstance(interface_module, ModuleType):
             if interface_module is None:
                 if isinstance(address, (int, str)): #seems to be a serial device
-                    interface_module = 'pydcpf.interfaces.serial'
+                    interface_module = 'pydcpf.interfaces.serial_interface'
                 elif isinstance(address, tuple) and len(address) == 2 and isinstance(address[0], str) and isinstance(address[1], int): #appears to be a socket address
                     interface_module = 'pydcpf.interfaces.socket_interface'
             interface_module = __import__(interface_module, fromlist=[''])
