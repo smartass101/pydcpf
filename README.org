@@ -22,3 +22,6 @@ The =pydcpf.appliances= subpackage contains several implementations of =Device= 
 
 * Future plans
 ** TODO test the new serial interface on the AC250Kxxx power supply
+** TODO create some real documentation
+1. fix up and extend docstrings
+2. let Sphinx do the job
