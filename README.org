@@ -13,6 +13,10 @@ The idea was to make the declaration of the protocol as simple as possible and m
 4) If you need to use some special interface for sending and receiving data you have to define a module with an =Interface= class that inherits from =pydcpf.interfaces.base.Interface= (study its docstrings to find out what you have to define), but in most cases the =pydcpf.interfaces.socket_interface= for TCP/IP and =pydcpf.interfaces.serial_interface= modules should provide what you need.
 5) Then you create an instance (or you subclass it first) of =pydcpf.Device= and you supply the modules to its constructor. After that you can use the methods of the =Device= instance to send and receive packets.
 
+** Packet interaction
+The =Device= class instances have methods that either work with packet elements parameters and return just the data contained in them, or the lower-level methods they wrap that operate on =*Packet= classes instances.
+A =*Packet= class instance has attributes (which are properties) of the names specified with =register_element= which decode the element only when you access them.
+
 * Examples
 The =pydcpf.appliances= subpackage contains several implementations of =Device= classes used at the [[http://golem.fjfi.cvut.cz][GOLEM tokamak]] for communicating with relays, valves, power supplies, ADCs, Data acquisition systems, etc. You will find the corresponding protocol implementations in the =pydcpf.protocols= subpackage.
 
