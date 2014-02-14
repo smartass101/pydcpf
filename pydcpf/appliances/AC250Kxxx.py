@@ -24,7 +24,7 @@ class Device(core.Device):
     """
 
 
-    def __init__(self, serial_port, address=0xff, **kwargs):
+    def __init__(self, serial_port, internal_address=0xff, **kwargs):
         """Initialize a new Device object with the specified address communicating through the specified serial port.
 
         Parameters
@@ -33,25 +33,28 @@ class Device(core.Device):
             number of the serial port to be used for communication
             or the explicit name of the device to be passed to :meth:`serial.Serial.__init__`
             on Linux it's the number X in /dev/ttySX and defaults to 0 (/dev/ttyS0)
-        address : int, optional
+        internal_address : int, optional
             internal device address
             ranges from 0 to 31 inclusive, defaluts to 255 (broadcast address)
             address 255 is the broadcast address, any device accepts it, but won't send a response packet back (not recommended, makes debugging very hard)
             the device address can be displayed by holding the red 'Clear' button for several seconds
         kwargs : keyword arguments dict
             passed on to :meth:`core.Device.__init__`
+            can override the address and serial_port
         """
-        self.internal_address = address
-        super(Device, self).__init__(address=serial_port, interface_module="pydcpf.interfaces.serial_interface",
-                                     protocol_interface="pydcpf.protocols.AC250Kxxx",
+        self.internal_address = internal_address
+        default_options = dict(address=serial_port, interface_module="pydcpf.interfaces.serial_interface",
+                                     protocol_module="pydcpf.protocols.AC250Kxxx",
                                      baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=False)
+        options = default_options if kwargs == {} else kwargs
+        super(Device, self).__init__(**options)
 
-
+        
     def query(self, send_byte_count=None, receive_byte_count=None, check_parameters=dict(), **packet_parameters):
         """Wrapper around :meth:`core.Device.query` taht inserts the internals address if none is specified"""
         if not "ADR" in packet_parameters:
             packet_parameters["ADR"] = self.internal_address
-        super(Device, self).query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
+        return super(Device, self).query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
         
             
     def command(self, send_byte_count=None, receive_byte_count=None, check_parameters=dict(), **packet_parameters):
@@ -75,7 +78,7 @@ class Device(core.Device):
         :class:`RuntimeError`
             Raises if the reply was something else than 'OK' or 'Err'
         """
-        ack = self.query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
+        ack = str(self.query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters))
         if ack == 'OK':
             return True
         elif ack == 'Err':
@@ -128,7 +131,7 @@ class Device(core.Device):
         status : bool
             True if output is activated, False otherwise
         """
-        if self.query(DATA='OUT?')[-1] == '1': #should be 'OUT1'
+        if str(self.query(DATA='OUT?')[-1]) == '1': #should be 'OUT1'
             return True
         else: #should be 'OUT0'
             return False
@@ -168,7 +171,7 @@ class Device(core.Device):
         identification : str
             name of the device, model and revision
         """
-        return self.query(DATA='ID?')
+        return str(self.query(DATA='ID?'))
 
     identification = property(fget=get_identification, doc="""Device identifiaction as a string""")
         
