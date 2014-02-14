@@ -24,12 +24,12 @@ class Device(core.Device):
     """
 
 
-    def __init__(self, serial_port=0, internal_address=0xff, **kwargs):
+    def __init__(self, address, internal_address=0xff, **kwargs):
         """Initialize a new Device object with the specified address communicating through the specified serial port.
 
         Parameters
         ----------
-        serial_port : int or str
+        address : int or str
             number of the serial port to be used for communication
             or the explicit name of the device to be passed to :meth:`serial.Serial.__init__`
             on Linux it's the number X in /dev/ttySX and defaults to 0 (/dev/ttyS0)
@@ -40,13 +40,18 @@ class Device(core.Device):
             the device address can be displayed by holding the red 'Clear' button for several seconds
         kwargs : keyword arguments dict
             passed on to :meth:`core.Device.__init__`
-            can override the address and serial_port
+            if specifies a different interface_module,
+            address must be specific to that module (e.g. tuple)
         """
         self.internal_address = internal_address
-        default_options = dict(address=serial_port, interface_module="pydcpf.interfaces.serial_interface",
-                                     protocol_module="pydcpf.protocols.AC250Kxxx",
-                                     baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=False)
-        options = default_options if kwargs == {} else kwargs
+        if 'interface_module' in kwargs:
+            kwargs['address'] = address
+            kwargs['protocol_module'] = "pydcpf.protocols.AC250Kxxx"
+            options = kwargs
+        else:
+            options = dict(address=address, interface_module="pydcpf.interfaces.serial_interface",
+                            protocol_module="pydcpf.protocols.AC250Kxxx",
+                            baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=False)
         super(Device, self).__init__(**options)
 
         
