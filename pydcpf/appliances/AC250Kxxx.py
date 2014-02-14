@@ -24,7 +24,7 @@ class Device(core.Device):
     """
 
 
-    def __init__(self, serial_port, internal_address=0xff, **kwargs):
+    def __init__(self, serial_port=0, internal_address=0xff, **kwargs):
         """Initialize a new Device object with the specified address communicating through the specified serial port.
 
         Parameters
