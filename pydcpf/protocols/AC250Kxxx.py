@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #Python device communications protocol framework (pydcpf)
 #Copyright (C) 2013  Ondřej Grover
 #
@@ -85,6 +86,9 @@ class ResponsePacket(_basePacket):
         self.start, self.length = start, end - start + 1
         return True
 
+    def check(self):
+        pass
+    
 
 import copy
 #to prevent conflicts with previous DATA definition

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #Python device communications protocol framework (pydcpf)
 #Copyright (C) 2013  Ondřej Grover
 #
