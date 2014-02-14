@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name = "pydcpf",
-      version = "1.3",
+      version = "1.4",
       description = "Python device communications protocol framework",
       long_description = "A framework for rapid implementation of communications protocols in Python focusing on speed, modular flexibility and extensibility.",
       url="https://github.com/smartass101/pydcpf",
