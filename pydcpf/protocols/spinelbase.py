@@ -63,8 +63,8 @@ class SpinelBasePacket(ResponsePacket):
     def find(self, buffer_start=0):
         raw_packet = self.raw_packet #minimize attr lookups
         try:
-            start = raw_packet.index('*', buffer_start)
-            end = raw_packet.index('\r', start)
+            start = raw_packet.index(b'*', buffer_start)
+            end = raw_packet.index(b'\r', start)
         except ValueError:
             return False
         self.start, self.length = start, end - start + 1

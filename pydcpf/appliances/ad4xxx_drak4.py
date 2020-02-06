@@ -16,9 +16,11 @@
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
 """This module implements a Device class for communication in Spinel 97 protocol with AD4ETH, AD4RS, AD4USB and Drak 4 devices made by Spinel s.r.o.
 """
+from __future__ import absolute_import
 import struct
 
 from .. import core
+from six.moves import range
 
 class Device(core.Device):
     """Class representing a AD4ETH, AD4RS, AD4USB and Drak 4
@@ -44,7 +46,7 @@ class Device(core.Device):
         """
         data = self.query(INST='\x51', DATA='\x00', ADR=address) # DATA for future compatibility according to docs
         channels = []
-        for i in xrange(0, 4):          # for all 4 channels
+        for i in range(0, 4):          # for all 4 channels
             offset = i*4
             channel_nr, status, value = struct.unpack_from(">cBH", data[offset:offset + 4])
             channels.append([ord(channel_nr),

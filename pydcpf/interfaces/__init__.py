@@ -16,6 +16,7 @@
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
 """This package provides the base :class:`base.Interface` class and several other Interface classes in submodules
 """
-from base import Interface
-import base
+from __future__ import absolute_import
+from .base import Interface
+from . import base
 __all__ = base.__all__

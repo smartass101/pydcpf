@@ -17,6 +17,8 @@
 """This module provides the base :class:`RequestPacket` and :class:`ResponsePacket` classes, mainly for documentation purposes (some methods shouldn't to be overridden).
 """
 
+from __future__ import absolute_import
+import six
 __all__ = ["RequestPacket", "ResponsePacket"]
 
 import struct
@@ -55,12 +57,12 @@ class RequestPacket(object):
             self.start, self.length = 0, len(raw_packet)
         elif packet_parameters != {}:
             minimum_packet_length = self.__class__.minimum_packet_length
-            for name in packet_parameters.iterkeys():
+            for name in six.iterkeys(packet_parameters):
                 if self.__class__.elements_definitions_dict[name][1] is None:
                     minimum_packet_length += len(packet_parameters[name])
             self.raw_packet = bytearray(minimum_packet_length)
             self.start, self.length = 0, len(self.raw_packet)
-            for name, value in packet_parameters.iteritems():
+            for name, value in six.iteritems(packet_parameters):
                 setattr(self, name, value)
 
 
@@ -71,15 +73,14 @@ class RequestPacket(object):
         if start_position < 0:
             start_position += self.length
         if isinstance(length_or_code, str): #is a code
-            return struct.unpack_from(length_or_code, buffer(self.raw_packet), start_position)[0]
-        if length_or_code > 1: #must be int then
-            return buffer(self.raw_packet, start_position, length_or_code)
-        elif length_or_code is not None: #must be 1 then
-            return chr(self.raw_packet[start_position])
-        if end_position > 0:
-            return buffer(self.raw_packet, start_position, end_position - start_position)
-        elif end_position is not None: #must be negative then
-            return buffer(self.raw_packet, start_position, self.length + end_position - start_position)
+            return struct.unpack_from(length_or_code, self.raw_packet, start_position)[0]
+        if length_or_code is not None:
+            if length_or_code > 1: #must be int then
+                return self.raw_packet[start_position:start_position+length_or_code]
+            else: #must be 1 then
+                return chr(self.raw_packet[start_position])
+        # otherwise rely on end position
+        return self.raw_packet[start_position:end_position]
         
 
     def _set_element_substring(self, name, value):
@@ -88,12 +89,17 @@ class RequestPacket(object):
         start_position += self.start
         if start_position < 0:
             start_position += self.length
+        if isinstance(value, six.string_types):
+            value = six.ensure_binary(value)
+        if isinstance(value, six.binary_type) and len(value) == 1:
+                value = ord(value)  # bytearray can only set ints on PY3
         if isinstance(length_or_code, str): #is a code
             struct.pack_into(length_or_code, self.raw_packet, start_position, value)
-        elif length_or_code > 1: #must be int then
-            self.raw_packet[start_position:start_position + length_or_code] = value
-        elif length_or_code is not None: #must be 1 then
-            self.raw_packet[start_position] = value
+        elif length_or_code is not None:
+            if length_or_code > 1: #must be int then
+                self.raw_packet[start_position:start_position + length_or_code] = value
+            else: #must be 1 then
+                self.raw_packet[start_position] = value
         elif end_position is not None: 
             self.raw_packet[start_position:end_position] = value
             
@@ -181,7 +187,7 @@ class RequestPacket(object):
 
     def __iter__(self):
         """Return and iterator over (element_name, value) pairs"""
-        for name in self.__class__.elements_definitions_dict.iterkeys():
+        for name in six.iterkeys(self.__class__.elements_definitions_dict):
             yield (name, getattr(self, name))
             
 

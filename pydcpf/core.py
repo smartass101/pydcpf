@@ -16,7 +16,9 @@
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
 """This module provides the core class of the package: :class:`Device`"""
 
+from __future__ import absolute_import
 from types import ModuleType
+from six.moves import range
 
 
 class Device(object):
@@ -109,7 +111,7 @@ class Device(object):
         if send_byte_count == 0: #do not split the packet TODO possibly to loose checking, what about None or negative values?
             self.interface.send_data(raw_packet)
         else: #may split
-            for delimiter in xrange(0, len(raw_packet), send_byte_count):
+            for delimiter in range(0, len(raw_packet), send_byte_count):
                 self.interface.send_data(raw_packet[delimiter:delimiter + send_byte_count])
 
                 

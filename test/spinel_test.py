@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest as ut
 import pydcpf.protocols.spinel97 as s97
 

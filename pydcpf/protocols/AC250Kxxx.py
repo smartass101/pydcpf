@@ -14,6 +14,7 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import absolute_import
 from . import base
 
 
@@ -79,8 +80,8 @@ class ResponsePacket(_basePacket):
     def find(self):
         raw_packet = self.raw_packet #minimize attr lookups
         try:
-            start = raw_packet.index('#')
-            end = raw_packet.index('\r', start)
+            start = raw_packet.index(b'#')
+            end = raw_packet.index(b'\r', start)
         except ValueError:
             return False
         self.start, self.length = start, end - start + 1

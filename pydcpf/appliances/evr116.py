@@ -33,7 +33,7 @@ class Device(core.Device):
     def set_position(self, position):
         if position < 512 or position > 6760:
             raise ValueError("position not in range [512, 6760]")
-        hex_position = "%x" % (position / 2)
+        hex_position = "%x" % (position // 2)
         return self.query(IDENTIFIER='g', DATA=hex_position)
 
 

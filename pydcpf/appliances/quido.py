@@ -16,6 +16,7 @@
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
 """API for the Quido IO module made by Papouch s.r.o."""
 
+from __future__ import absolute_import
 from .. import core
 import struct 
 
@@ -68,7 +69,7 @@ class Device(core.Device):
             False if inactive (low voltage)
         """
         return self._decode_inputs_outputs_state(
-            self.query(INST='\x30', ADR=address)
+            self.query(INST=b'\x30', ADR=address)
             )
 
         
@@ -103,7 +104,7 @@ class Device(core.Device):
             no order is required, arbitrary outputs can be given
         """
         return self.query(
-            INST='\x20',
+            INST=b'\x20',
             DATA=struct.pack("%ib" % len(outputs_state),
                              # 1 bit H/L (-/+ bit) + 7 bits for output number from 1 to 127
                              *[ abs(i) if i < 0 else i - 128 for i in outputs_state ]),
@@ -122,5 +123,5 @@ class Device(core.Device):
             False if inactive (low voltage)
         """
         return self._decode_inputs_outputs_state(
-            self.query(INST='\x31', ADR=address)
+            self.query(INST=b'\x31', ADR=address)
             )

@@ -15,6 +15,7 @@
 #You should have received a copy of the GNU General Public License
 #along with pydcpf.  If not, see <http://www.gnu.org/licenses/>.
 from .spinelbase import SpinelBasePacket, ACKError
+from six.moves import range
 
 
 __all__ = ["RequestPacket", "ResponsePacket"]
@@ -42,7 +43,7 @@ class Spinel97BasePacket(SpinelBasePacket):
         end = self.start + self.length - 2
         SUM = 255
         packet = self.raw_packet
-        for i in xrange(self.start, end):
+        for i in range(self.start, end):
             SUM -= packet[i]
         return abs(SUM % 256)
 
