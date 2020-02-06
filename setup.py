@@ -9,7 +9,7 @@ setup(name = "pydcpf",
       packages = ["pydcpf", "pydcpf.interfaces", "pydcpf.appliances", "pydcpf.protocols"],
       author='Ondrej Grover',
       author_email='ondrej.grover@gmail.com',
-      requires = ["pyserial"],
+      requires = ["pyserial", 'six'],
       classifiers = [
           "Development Status :: 5 - Production/Stable",
           "Intended Audience :: Science/Research",
