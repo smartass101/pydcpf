@@ -59,7 +59,8 @@ class Device(core.Device):
         """Wrapper around :meth:`core.Device.query` taht inserts the internals address if none is specified"""
         if not "ADR" in packet_parameters:
             packet_parameters["ADR"] = self.internal_address
-        return super(Device, self).query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
+        response = super(Device, self).query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
+        return response.decode('ascii')
         
             
     def command(self, send_byte_count=None, receive_byte_count=None, check_parameters=dict(), **packet_parameters):
@@ -83,7 +84,7 @@ class Device(core.Device):
         :class:`RuntimeError`
             Raises if the reply was something else than 'OK' or 'Err'
         """
-        ack = str(self.query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters))
+        ack = self.query(send_byte_count, receive_byte_count, check_parameters, **packet_parameters)
         if ack == 'OK':
             return True
         elif ack == 'Err':
@@ -136,7 +137,7 @@ class Device(core.Device):
         status : bool
             True if output is activated, False otherwise
         """
-        if str(self.query(DATA='OUT?')[-1]) == '1': #should be 'OUT1'
+        if self.query(DATA='OUT?')[-1] == '1': #should be 'OUT1'
             return True
         else: #should be 'OUT0'
             return False
@@ -176,7 +177,7 @@ class Device(core.Device):
         identification : str
             name of the device, model and revision
         """
-        return str(self.query(DATA='ID?'))
+        return self.query(DATA='ID?')
 
     identification = property(fget=get_identification, doc="""Device identifiaction as a string""")
         

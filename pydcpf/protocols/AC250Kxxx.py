@@ -20,12 +20,12 @@ from . import base
 
 def _hexify(value):
     """trasform a number into a 1 Byte hex representation suitable for communication"""
-    return "%02X" % value
+    return b"%02X" % value
 
 
 def _dehexify(hexbytestring):
     """Transform a 2-char bytestring representing a number"""
-    return int(str(hexbytestring), 16)
+    return int(hexbytestring, 16)
 
 
 class _basePacket(base.RequestPacket):
